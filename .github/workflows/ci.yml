@@ -24,4 +24,12 @@ jobs:
         run: npm ci
 
       - name: Run Build
-        run: npm run build
+        run: NEXT_DISABLE_SOURCEMAPS=true NEXT_TELEMETRY_DISABLED=1 npx next build --no-lint
+        env:
+          MONGODB_URI: "mongodb+srv://test:test@cluster.mongodb.net/test"
+          NEXT_PUBLIC_FIREBASE_apiKey: "test"
+          NEXT_PUBLIC_FIREBASE_authDomain: "test"
+          NEXT_PUBLIC_FIREBASE_projectId: "test"
+          NEXT_PUBLIC_FIREBASE_storageBucket: "test"
+          NEXT_PUBLIC_FIREBASE_messagingSenderId: "test"
+          NEXT_PUBLIC_FIREBASE_appId: "test"
