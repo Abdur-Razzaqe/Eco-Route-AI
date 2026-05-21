@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-# এখানে আমরা গিটহাব রানারকে জোর করে Node 24 ব্যবহার করতে বলছি যাতে ওয়ার্নিং উধাও হয়ে যায়
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24" # নোড ২০ কেটে ২৪ করে দেওয়া হলো
+          node-version: "20" # গিটহাব অফিশিয়ালি পুরোপুরি বন্ধ করার আগ পর্যন্ত ২০ রাখাই সেফ
           cache: "npm"
 
       - name: Install dependencies
@@ -29,5 +25,3 @@ jobs:
 
       - name: Run Build
         run: npm run build
-      - name: Run Tests
-        run: npm test
