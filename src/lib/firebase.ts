@@ -1,11 +1,7 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_apiKey,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_authDomain,
@@ -16,6 +12,20 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_measurementId,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// ১. Next.js হট রিলোড সেফ ইনিশিয়ালাইজেশন
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+
+// ২. অথেনটিকেশন ইনিশিয়ালাইজেশন এবং এক্সপোর্ট করার ব্যবস্থা
+const auth = getAuth(app);
+
+// ৩. অ্যানালিটিক্স সেফলি হ্যান্ডেল করা (নেক্সট-জেএস ব্যাকএন্ড বা সার্ভারে যেন ক্র্যাশ না করে)
+let analytics = null;
+if (typeof window !== "undefined") {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  });
+}
+
+export { app, auth, analytics };
