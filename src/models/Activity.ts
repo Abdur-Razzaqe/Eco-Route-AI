@@ -30,8 +30,7 @@ const ActivitySchema: Schema<IActivity> = new Schema(
   { timestamps: true },
 );
 
-const Activity: Model<IActivity> =
+const Activity =
   mongoose.models.Activity ||
   mongoose.model<IActivity>("Activity", ActivitySchema);
-
 export default Activity;
