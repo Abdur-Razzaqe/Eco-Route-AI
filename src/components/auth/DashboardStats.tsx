@@ -3,6 +3,14 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 export default function DashboardStats() {
   const { user, logout, loading } = useAuth();
@@ -12,11 +20,9 @@ export default function DashboardStats() {
   const [distance, setDistance] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  // হিস্ট্রি ডাটা স্টেট
   const [activities, setActivities] = useState<any[]>([]);
 
-  // ডাটাবেজ থেকে ডাটা ফেচ করার ফাংশন
+  // ডাটাবেজ থেকে ডাটা আনা
   const fetchActivities = async () => {
     if (!user?.uid) return;
     try {
@@ -27,6 +33,22 @@ export default function DashboardStats() {
       }
     } catch (err) {
       console.error("Failed to fetch activities:", err);
+    }
+  };
+
+  // ডাটাবেজ থেকে ডাটা ডিলিট করার ফাংশন
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this trip?")) return;
+    try {
+      const response = await fetch(`/api/activity?id=${id}`, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+      if (result.success) {
+        fetchActivities(); // ডাটা ডিলিট হওয়ার পর চার্ট ও টেবিল অটো রিফ্রেশ
+      }
+    } catch (err) {
+      console.error("Failed to delete:", err);
     }
   };
 
@@ -65,7 +87,7 @@ export default function DashboardStats() {
           `🌱 Success! Generated ${result.data.carbonEmission} kg of CO2.`,
         );
         setDistance("");
-        fetchActivities(); // টেবিল ও কার্ড অটো রিফ্রেশ হবে
+        fetchActivities();
       } else {
         setMessage("❌ Something went wrong.");
       }
@@ -76,7 +98,7 @@ export default function DashboardStats() {
     }
   };
 
-  // 📊 রিয়েল-টাইম অ্যানালিটিক্স ক্যালকুলেশন লজিক
+  // 📊 অ্যানালিটিক্স ক্যালকুলেশন
   const totalDistance = activities.reduce(
     (sum, item) => sum + (item.distance || 0),
     0,
@@ -88,6 +110,29 @@ export default function DashboardStats() {
   const ecoFriendlyTrips = activities.filter(
     (item) => item.carbonEmission === 0,
   ).length;
+
+  // 🥧 পাই-চার্টের জন্য ডাটা ফরম্যাট করা
+  const chartDataMap = activities.reduce((acc: any, item) => {
+    const type =
+      item.transportType === "driving"
+        ? "🚗 Driving"
+        : item.transportType === "transit"
+          ? "🚌 Transit"
+          : item.transportType === "bicycling"
+            ? "🚲 Cycling"
+            : "🚶 Walking";
+    acc[type] = (acc[type] || 0) + (item.carbonEmission || 0);
+    return acc;
+  }, {});
+
+  const chartData = Object.keys(chartDataMap)
+    .map((key) => ({
+      name: key,
+      value: Number(chartDataMap[key].toFixed(2)),
+    }))
+    .filter((item) => item.value > 0); // শুধু নির্গমন থাকা টাইপগুলো দেখাবে
+
+  const COLORS = ["#f87171", "#fb923c", "#34d399", "#60a5fa"];
 
   if (loading || !user) {
     return (
@@ -122,10 +167,9 @@ export default function DashboardStats() {
           </button>
         </header>
 
-        {/* 📈 ফেমাস অ্যানালিটিক্স কার্ড সেকশন */}
+        {/* 📈 অ্যানালিটিক্স কার্ড */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-          {/* কার্ড ১: মোট দূরত্ব */}
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Total Travel Distance
             </span>
@@ -135,31 +179,21 @@ export default function DashboardStats() {
               </span>
               <span className="text-sm text-slate-400">km</span>
             </div>
-            <span className="text-[11px] text-slate-500 mt-2">
-              🚗 Combined mileage of all trips
-            </span>
           </div>
 
-          {/* কার্ড ২: মোট নির্গমন */}
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Carbon Footprint
             </span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span
-                className={`text-3xl font-bold ${totalEmissions > 20 ? "text-red-400" : "text-orange-400"}`}
-              >
+              <span className="text-3xl font-bold text-orange-400">
                 {totalEmissions.toFixed(2)}
               </span>
               <span className="text-sm text-slate-400">kg CO2</span>
             </div>
-            <span className="text-[11px] text-slate-500 mt-2">
-              ⚠️ Net environmental impact
-            </span>
           </div>
 
-          {/* াকার্ড ৩: গ্রিন স্কোর */}
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Eco-Friendly Trips
             </span>
@@ -169,75 +203,123 @@ export default function DashboardStats() {
               </span>
               <span className="text-sm text-slate-400">trips</span>
             </div>
-            <span className="text-[11px] text-slate-500 mt-2">
-              🌱 Zero-emission (Walking/Cycling)
-            </span>
           </div>
         </div>
 
-        {/* নিচের মেইন কন্টেন্ট গ্রিড */}
+        {/* 🛠️ মেইন গ্রিড */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* 🛠️ ফর্ম সেকশন (বাম পাশে) */}
-          <main className="bg-slate-900 border border-slate-800 p-6 rounded-2xl h-fit">
-            <h2 className="text-xl font-semibold mb-4 text-emerald-400">
-              Track New Journey
-            </h2>
-            <form onSubmit={handleTrackRoute} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">
-                  Transport Type
-                </label>
-                <select
-                  value={transportType}
-                  onChange={(e) => setTransportType(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition"
+          {/* বাম কলাম: ফর্ম ও পাই-চার্ট */}
+          <div className="space-y-6">
+            <main className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+              <h2 className="text-xl font-semibold mb-4 text-emerald-400">
+                Track New Journey
+              </h2>
+              <form onSubmit={handleTrackRoute} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">
+                    Transport Type
+                  </label>
+                  <select
+                    value={transportType}
+                    onChange={(e) => setTransportType(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition"
+                  >
+                    <option value="driving">
+                      🚗 Driving (Personal Vehicle)
+                    </option>
+                    <option value="transit">🚌 Transit (Bus / Train)</option>
+                    <option value="bicycling">🚲 Bicycling</option>
+                    <option value="walking">🚶 Walking</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">
+                    Distance (km)
+                  </label>
+                  <input
+                    type="number"
+                    value={distance}
+                    onChange={(e) => setDistance(e.target.value)}
+                    placeholder="e.g. 12"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 px-4 rounded-xl transition duration-200 disabled:opacity-50"
                 >
-                  <option value="driving">🚗 Driving (Personal Vehicle)</option>
-                  <option value="transit">🚌 Transit (Bus / Train)</option>
-                  <option value="bicycling">🚲 Bicycling</option>
-                  <option value="walking">🚶 Walking</option>
-                </select>
-              </div>
+                  {submitting ? "Saving..." : "Calculate & Save"}
+                </button>
+              </form>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">
-                  Distance (km)
-                </label>
-                <input
-                  type="number"
-                  value={distance}
-                  onChange={(e) => setDistance(e.target.value)}
-                  placeholder="e.g. 12"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition"
-                />
-              </div>
+              {message && (
+                <div className="mt-4 p-3 bg-slate-950 border border-slate-800 rounded-xl text-center text-sm text-emerald-400 font-medium">
+                  {message}
+                </div>
+              )}
+            </main>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 px-4 rounded-xl transition duration-200 disabled:opacity-50"
-              >
-                {submitting ? "Saving..." : "Calculate & Save"}
-              </button>
-            </form>
+            {/* 🥧 ফেমাস পাই-চার্ট সেকশন */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl h-64 flex flex-col justify-between">
+              <h3 className="text-sm font-semibold text-slate-300">
+                Emissions by Transport (kg)
+              </h3>
+              {chartData.length === 0 ? (
+                <p className="text-xs text-slate-500 text-center my-auto">
+                  No emission data to display.
+                </p>
+              ) : (
+                <div className="w-full h-44">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="45%"
+                        innerRadius={40}
+                        outerRadius={60}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#020617",
+                          borderColor: "#1e293b",
+                          color: "#fff",
+                          fontSize: "12px",
+                        }}
+                      />
+                      <Legend
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: "11px", paddingTop: "5px" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+          </div>
 
-            {message && (
-              <div className="mt-4 p-3 bg-slate-950 border border-slate-800 rounded-xl text-center text-sm text-emerald-400 font-medium">
-                {message}
-              </div>
-            )}
-          </main>
-
-          {/* 📊 লাইভ হিস্ট্রি টেবিল সেকশন (ডান পাশে ২ কলাম জুড়ে) */}
-          <div className="lg:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
-            <div>
+          {/* ডান কলাম: লাইভ হিস্ট্রি টেবিল (ডিলিট বাটন সহ) */}
+          <div className="lg:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between h-[544px]">
+            <div className="overflow-y-auto pr-1">
               <h2 className="text-xl font-semibold mb-4 text-slate-200">
                 Recent Carbon History
               </h2>
 
               {activities.length === 0 ? (
                 <p className="text-sm text-slate-500 py-8 text-center">
-                  No journey logs found. Start tracking above!
+                  No journey logs found.
                 </p>
               ) : (
                 <div className="overflow-x-auto">
@@ -247,14 +329,15 @@ export default function DashboardStats() {
                         <th className="pb-3">Type</th>
                         <th className="pb-3">Distance</th>
                         <th className="pb-3">Emission</th>
-                        <th className="pb-3 text-right">Date</th>
+                        <th className="pb-3">Date</th>
+                        <th className="pb-3 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/60">
                       {activities.map((activity) => (
                         <tr
                           key={activity._id}
-                          className="hover:bg-slate-850/40 transition"
+                          className="hover:bg-slate-850/40 transition group"
                         >
                           <td className="py-3.5 capitalize font-medium text-slate-300">
                             {activity.transportType === "driving" &&
@@ -276,11 +359,21 @@ export default function DashboardStats() {
                               {activity.carbonEmission} kg
                             </span>
                           </td>
-                          <td className="py-3.5 text-right text-slate-500 text-xs">
+                          <td className="py-3.5 text-slate-500 text-xs">
                             {new Date(activity.createdAt).toLocaleDateString(
                               "en-US",
                               { month: "short", day: "numeric" },
                             )}
+                          </td>
+                          {/* 🗑️ ডিলিট বাটন অ্যাকশন */}
+                          <td className="py-3.5 text-right">
+                            <button
+                              onClick={() => handleDelete(activity._id)}
+                              className="text-slate-500 hover:text-red-400 p-1 rounded-lg hover:bg-red-500/10 transition"
+                              title="Delete log"
+                            >
+                              🗑️
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -290,7 +383,7 @@ export default function DashboardStats() {
               )}
             </div>
 
-            <div className="mt-6 p-4 bg-emerald-500/5 text-slate-400 border border-emerald-500/10 rounded-xl text-xs flex justify-between items-center">
+            <div className="mt-4 p-4 bg-emerald-500/5 text-slate-400 border border-emerald-500/10 rounded-xl text-xs flex justify-between items-center">
               <span>
                 💡 Total Logs: <b>{activities.length} trips</b>
               </span>

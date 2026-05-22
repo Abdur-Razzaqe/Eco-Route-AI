@@ -9,7 +9,7 @@ const CARBON_FACTORS: { [key: string]: number } = {
   bicycling: 0.0,
 };
 
-// ১. POST Method
+// ১. POST: নতুন এক্টিভিটি সেভ করা
 export async function POST(request: Request) {
   try {
     await dbConnect();
@@ -47,11 +47,10 @@ export async function POST(request: Request) {
   }
 }
 
-// ২. GET Method (নিশ্চিত করুন export করা আছে)
+// ২. GET: ইউজারের সব এক্টিভিটি ডাটাবেজ থেকে আনা
 export async function GET(request: Request) {
   try {
     await dbConnect();
-
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
@@ -63,9 +62,35 @@ export async function GET(request: Request) {
     }
 
     const activities = await Activity.find({ userId }).sort({ createdAt: -1 });
-
     return NextResponse.json(
       { success: true, data: activities },
+      { status: 200 },
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 },
+    );
+  }
+}
+
+// ৩. DELETE: নির্দিষ্ট এক্টিভিটি মুছে ফেলা
+export async function DELETE(request: Request) {
+  try {
+    await dbConnect();
+    const { searchParams } = new URL(request.url);
+    const activityId = searchParams.get("id");
+
+    if (!activityId) {
+      return NextResponse.json(
+        { error: "Activity ID is required" },
+        { status: 400 },
+      );
+    }
+
+    await Activity.findByIdAndDelete(activityId);
+    return NextResponse.json(
+      { success: true, message: "Activity deleted successfully" },
       { status: 200 },
     );
   } catch (error: any) {
