@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function LoginForm() {
-  const { user, loginWithGoogle, loginWithEmail, loading } = useAuth();
+export default function SignupForm() {
+  const { user, loginWithGoogle, registerWithEmail, loading } = useAuth();
   const router = useRouter();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,17 +24,23 @@ export default function LoginForm() {
     e.preventDefault();
     setError("");
 
-    if (!email || !password) {
+    if (!name || !email || !password) {
       setError("Please fill in all fields");
       return;
     }
 
     try {
-      await loginWithEmail(email, password);
+      await registerWithEmail(email, password, name);
       router.push("/dashboard");
     } catch (err: any) {
       console.error("Firebase Auth Error:", err);
-      setError("Invalid email or password. Please try again.");
+      if (err.code === "auth/weak-password") {
+        setError("Password should be at least 6 characters.");
+      } else if (err.code === "auth/email-already-in-use") {
+        setError("This email is already registered. Please Sign In.");
+      } else {
+        setError(err.message || "Registration failed. Try again.");
+      }
     }
   };
 
@@ -52,11 +59,11 @@ export default function LoginForm() {
           Eco<span className="text-emerald-500">Route</span> AI
         </h1>
         <p className="text-sm text-slate-400 text-center mb-6">
-          Welcome back! Sign in to manage your carbon tracking.
+          Create an account to track your carbon footprint.
         </p>
 
         <h2 className="text-xl font-semibold text-slate-200 text-center mb-6">
-          Welcome Back
+          Create an Account
         </h2>
 
         {error && (
@@ -66,6 +73,19 @@ export default function LoginForm() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="John Doe"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition"
+            />
+          </div>
+
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1">
               Email Address
@@ -94,7 +114,7 @@ export default function LoginForm() {
             type="submit"
             className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 px-4 rounded-xl transition duration-200"
           >
-            Sign In
+            Sign Up
           </button>
         </form>
 
@@ -131,12 +151,12 @@ export default function LoginForm() {
         </button>
 
         <p className="text-xs text-slate-400 text-center mt-6">
-          Don't have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/signup"
+            href="/login"
             className="text-emerald-500 hover:underline font-medium"
           >
-            Sign Up
+            Sign In
           </Link>
         </p>
       </div>

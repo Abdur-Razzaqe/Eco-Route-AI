@@ -1,65 +1,113 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-white">
+      {/* 🌐 নেভিগেশন বার */}
+      <nav className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center border-b border-slate-900">
+        <div className="text-xl font-bold text-white tracking-tight">
+          Eco<span className="text-emerald-500">Route</span> AI
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="flex items-center gap-4">
+          <Link
+            href="/login"
+            className="text-sm font-medium text-slate-400 hover:text-white transition duration-200"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Sign In
+          </Link>
+          <Link
+            href="/signup"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2 rounded-xl transition duration-200 shadow-lg shadow-emerald-600/10 active:scale-[0.98]"
           >
-            Documentation
-          </a>
+            Get Started
+          </Link>
         </div>
-      </main>
+      </nav>
+
+      {/* 🚀 হিরো সেকশন (Hero Section) */}
+      <header className="max-w-4xl mx-auto text-center px-6 pt-24 pb-16">
+        <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs px-3 py-1.5 rounded-full font-medium mb-6 animate-pulse">
+          🌱 Powered by AI Carbon Estimation
+        </div>
+        <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight mb-6 leading-[1.15]">
+          Track Your Travel <br />
+          <span className="bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+            Reduce Your Carbon Footprint
+          </span>
+        </h1>
+        <p className="text-base sm:text-lg text-slate-400 max-w-xl mx-auto mb-10 leading-relaxed">
+          EcoRoute AI helps you monitor emissions from your daily commute,
+          validate data with smart Mongoose tracking, and suggest greener routes
+          for a sustainable future.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+          <Link
+            href="/signup"
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-3.5 rounded-xl transition duration-200 shadow-xl shadow-emerald-600/20 active:scale-[0.98] text-center"
+          >
+            Start Tracking Free
+          </Link>
+          <Link
+            href="/login"
+            className="w-full sm:w-auto bg-slate-900 hover:bg-slate-850 text-slate-300 font-semibold px-8 py-3.5 rounded-xl border border-slate-800 transition duration-200 text-center"
+          >
+            Go to Dashboard
+          </Link>
+        </div>
+      </header>
+
+      {/* ✨ ফিচার সেকশন (Features Section) */}
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* কার্ড ১ */}
+          <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl hover:border-emerald-500/30 transition duration-300 group">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 text-emerald-400 font-bold text-xl group-hover:scale-110 transition duration-200">
+              🚗
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Smart Logging
+            </h3>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Log your driving, transit, bicycling, or walking distance
+              instantly. Custom-tuned factors calculate exact emission rates.
+            </p>
+          </div>
+
+          {/* কার্ড ২ */}
+          <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl hover:border-emerald-500/30 transition duration-300 group">
+            <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mb-4 text-teal-400 font-bold text-xl group-hover:scale-110 transition duration-200">
+              🔒
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Secure Cloud Sync
+            </h3>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Seamlessly synced with Firebase Authentication and MongoDB Atlas
+              database to guard your logs with precise schema validation.
+            </p>
+          </div>
+
+          {/* কার্ড ৩ */}
+          <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl hover:border-emerald-500/30 transition duration-300 group">
+            <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-4 text-cyan-400 font-bold text-xl group-hover:scale-110 transition duration-200">
+              📈
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Real-time Analytics
+            </h3>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Analyze historical tracking trends dynamically and check automated
+              emission levels directly from your beautiful interface.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 👣 ফুটার (Footer) */}
+      <footer className="max-w-7xl mx-auto px-6 py-8 mt-20 border-t border-slate-900 text-center text-xs text-slate-600">
+        © {new Date().getFullYear()} EcoRoute AI. Built with MERN & Next.js. All
+        rights reserved.
+      </footer>
     </div>
   );
 }
