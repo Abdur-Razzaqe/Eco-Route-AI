@@ -30,7 +30,7 @@ export default function SignupForm() {
     }
 
     try {
-      await registerWithEmail(email, password, name);
+      await registerWithEmail(email, password, name, "user");
       router.push("/dashboard");
     } catch (err: any) {
       console.error("Firebase Auth Error:", err);
